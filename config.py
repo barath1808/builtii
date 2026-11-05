@@ -1,6 +1,19 @@
-"""Shared runtime settings. Credentials stay in the process environment."""
+"""Shared runtime settings, loaded from .env without overriding the environment."""
 import os
 from pathlib import Path
+from dotenv import load_dotenv
+
+
+def load_environment(env_path=None):
+    """Prefer the source project's .env; installed commands use the working directory."""
+    project_env = Path(__file__).resolve().parent / ".env"
+    selected = Path(env_path) if env_path is not None else (
+        project_env if project_env.is_file() else Path.cwd() / ".env"
+    )
+    return load_dotenv(selected, override=False, interpolate=False, encoding="utf-8-sig")
+
+
+load_environment()
 
 DEFAULT_MODEL = "gemini-2.5-pro"
 MAX_PDF_BYTES = 100 * 1024 * 1024

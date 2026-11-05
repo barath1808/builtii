@@ -4,7 +4,7 @@ Validated on Python 3.12 in the supplied cloud workspace.
 
 | Check | Result and scope |
 | --- | --- |
-| `python -m unittest discover -v` | 45 tests passed; no skipped tests. Synthetic fixtures and injected provider responses. |
+| `python -m unittest discover -v` | 49 tests passed; no skipped tests. Synthetic fixtures and injected provider responses. |
 | Core drawing pipeline | Real PyMuPDF rendering, two frozen test-provider passes, strict validation, reconciliation and HTML/CSV/JSON outputs exercised end to end. |
 | Failure handling | Missing/failed auditor, malformed schema, nonfinite values, corrupt caches, forced-refresh failures and rendering failures exercised. |
 | Evidence matching | Conflicting quantities, operations, distinct identities, repeated plan/profile observations, unknown identity and many-to-many matches exercised. |
@@ -29,6 +29,11 @@ pipeline modules, all four prompt files, the JSON schema and browser assets are
 packaged. No retired nested application package is shipped.
 
 ## Not verified
+
+Configuration tests additionally verify automatic `.env` loading in a fresh
+process, Windows UTF-8 BOM handling, unchanged credential text, environment
+precedence and explicit behavior when the file is missing. No real credentials
+are included in the tests.
 
 - Live Gemini requests: no `GEMINI_API_KEY` is configured.
 - Real engineering drawing accuracy: no drawings or labelled takeoff ground truth

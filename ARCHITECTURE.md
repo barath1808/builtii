@@ -70,7 +70,7 @@ be included in an installable distribution. They are not extra processing stages
 | File | Implemented responsibility |
 | --- | --- |
 | `main.py` | `serve`, `extract` and separate `evaluate` commands. |
-| `config.py` | Shared model selection, process environment settings and PDF limits. No embedded credentials. |
+| `config.py` | Loads `.env` without replacing existing environment variables; shared model selection and PDF limits. No embedded credentials. |
 | `web/app.py` | Local upload endpoint, one active web job, background execution, persisted status and allowed report artifacts. |
 | `web/static/` | Upload/progress interface; no model credentials in browser code. |
 | `pipeline/pdf_processor.py` | PDF validation, overview, overlapping 220 DPI tiles and page previews; explicit resource limits. |

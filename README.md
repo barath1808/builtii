@@ -44,8 +44,11 @@ source .venv/bin/activate
 python -m pip install -r requirements.txt
 ```
 
-Set `GEMINI_API_KEY` securely in the server process environment. `.env.example`
-documents variable names; `.env` files are not automatically loaded. Optional
+Copy `.env.example` to `.env` beside `config.py` and set `GEMINI_API_KEY` there,
+or configure it securely in the server process environment. Existing environment
+variables take precedence over `.env`. Installed commands fall back to `.env` in
+the working directory when no project-side file exists. Restart after editing.
+The real `.env` is excluded from Git and must never be shared. Optional
 `GEMINI_MODEL` and `GEMINI_AUDIT_MODEL` select the two models (both default to
 `gemini-2.5-pro`; confirm model availability for your account). Using different
 models can reduce correlated mistakes but does not establish independence of
