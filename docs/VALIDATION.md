@@ -4,7 +4,7 @@ Validated on Python 3.12 in the supplied cloud workspace.
 
 | Check | Result and scope |
 | --- | --- |
-| `python -m unittest discover -v` | 41 tests passed; no skipped tests. Synthetic fixtures and injected provider responses. |
+| `python -m unittest discover -v` | 44 tests passed; no skipped tests. Synthetic fixtures and injected provider responses. |
 | Core drawing pipeline | Real PyMuPDF rendering, two frozen test-provider passes, strict validation, reconciliation and HTML/CSV/JSON outputs exercised end to end. |
 | Failure handling | Missing/failed auditor, malformed schema, nonfinite values, corrupt caches, forced-refresh failures and rendering failures exercised. |
 | Evidence matching | Conflicting quantities, operations, distinct identities, repeated plan/profile observations, unknown identity and many-to-many matches exercised. |
@@ -21,6 +21,10 @@ synchronous test client's event loop to hang. The server, interface suite and
 browser checks succeeded with authorized local networking enabled. This was a
 test-environment restriction, not an application failure. The installed Starlette
 test client emits a deprecation warning about its httpx transport; tests pass.
+
+Prompt-file composition, prompt cache-fingerprint changes and invalid-stage rejection
+are also covered. The built wheel was inspected to confirm all four runtime
+Markdown prompt assets are included.
 
 ## Not verified
 

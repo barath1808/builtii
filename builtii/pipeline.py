@@ -42,6 +42,7 @@ def run(path, output, provider, progress=None, force=False):
         engine.update(source.name.encode())
         engine.update(source.read_bytes())
     manifest = {"source_sha256": sha_file(path), "models": provider.models,
+                "prompts_sha256": prompts.fingerprint(),
                 "engine_sha256": engine.hexdigest(), "render": pdf.RENDER_VERSION,
                 "version": __version__, "pages": total}
     fingerprint = hashlib.sha256(json.dumps(manifest, sort_keys=True).encode()).hexdigest()

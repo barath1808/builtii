@@ -5,6 +5,20 @@ AI1 extracts quantities and evidence; AI2 independently reads the same drawings;
 the engine reconciles the two frozen results into an item table and human review
 queue. BOQs are optional, held-out evaluation inputs and cannot enter extraction.
 
+## Architecture and actual prompts
+
+- [Architecture, component map and data flow](docs/ARCHITECTURE.md)
+- [AI1 extraction prompt](builtii/prompt_templates/ai1_extract.md)
+- [AI2 independent audit prompt](builtii/prompt_templates/ai2_audit.md)
+- [Shared drawing extraction rules](builtii/prompt_templates/shared_rules.md)
+- [System instruction](builtii/prompt_templates/system.md)
+- [Output schema and arithmetic validation](builtii/schema.py)
+
+These Markdown prompt files are loaded by the application at runtime. Both AI
+passes receive their own role, the shared rules, page metadata and strict output
+schema. Restart the server after editing prompts. Their content hash is included
+in cache identity so changed prompts cannot reuse results from an earlier version.
+
 This release is a runnable local workbench and backend foundation. It is not a
 complete Civils.ai equivalent, a production multi-user SaaS, or a demonstrated
 high-accuracy takeoff system. No real project drawings or reference BOQs were
