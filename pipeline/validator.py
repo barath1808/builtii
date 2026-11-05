@@ -2,37 +2,12 @@
 from copy import deepcopy
 from decimal import Decimal, InvalidOperation
 import json
+from importlib.resources import files
 from jsonschema import Draft202012Validator
 
-
-def obj(properties):
-    return {"type": "object", "properties": properties,
-            "required": list(properties), "additionalProperties": False}
-
-
-TEXT = {"type": "string", "minLength": 1, "maxLength": 4000}
-NULL_TEXT = {"anyOf": [TEXT, {"type": "null"}]}
-BBOX = {"anyOf": [{"type": "array", "items": {"type": "number", "minimum": 0, "maximum": 1},
-                       "minItems": 4, "maxItems": 4}, {"type": "null"}]}
-EVIDENCE = obj({"quote": TEXT, "location": TEXT, "bbox": BBOX})
-OPERAND = obj({"value": {"type": "number", "minimum": 0}, "unit": TEXT, "quote": TEXT})
-MEASUREMENT = obj({"operation": {"enum": ["printed", "count", "sum", "product", "difference", "unresolved"]},
-                   "operands": {"type": "array", "items": OPERAND, "maxItems": 200},
-                   "explanation": TEXT})
-SCOPE = obj({k: NULL_TEXT for k in ("work_type", "action", "material", "specification", "method")})
-SCOPE["properties"]["action"] = {"enum": [None, "install", "remove", "replace", "relocate", "rehabilitate",
-                                                   "protect", "modify", "reconnect", "connect", "abandon", "remain"]}
-ITEM = obj({"description": TEXT, "scope": SCOPE, "unit": TEXT,
-            "asset_id": NULL_TEXT, "identity_context": NULL_TEXT,
-            "representation": {"enum": ["installation", "schedule", "overview", "typical_detail", "unknown"]},
-            "measurement": MEASUREMENT,
-            "evidence": {"type": "array", "items": EVIDENCE, "minItems": 1, "maxItems": 200},
-            "quality": {"enum": ["clear", "ambiguous", "unreadable"]},
-            "uncertainties": {"type": "array", "items": TEXT}})
-PAGE_SCHEMA = obj({"page": {"type": "integer", "minimum": 1}, "sheet_title": NULL_TEXT,
-                   "items": {"type": "array", "items": ITEM, "maxItems": 1000},
-                   "review_regions": {"type": "array", "items": obj({"reason": TEXT, "bbox": BBOX})},
-                   "coverage": {"enum": ["complete", "partial", "unreadable"]}})
+SCHEMA_PATH = files("schemas").joinpath("takeoff_schema.json")
+PAGE_SCHEMA = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
+Draft202012Validator.check_schema(PAGE_SCHEMA)
 
 
 def normalized(value):

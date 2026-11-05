@@ -56,3 +56,13 @@ automatic geometric measurement, a persistent project dashboard or human approva
 transactions. Without real drawings and a live provider, no honest implementation
 can establish extraction accuracy. The comparison policy is deliberately strict;
 it may produce many review items where descriptions or scope wording differ.
+
+## Simplified layout
+
+The updated project keeps the original layout's useful separation: `main.py` and
+`config.py` at the root, processing modules in `pipeline/`, visible model
+instructions in `prompts/`, and the actual response contract in
+`schemas/takeoff_schema.json`. The browser interface is isolated in `web/`; tests
+and supporting notes live in their own folders. Runtime files go to `output/`.
+The root `ARCHITECTURE.md` maps every stage to its implementation. Historical
+version modules and project-specific fixtures are not restored.

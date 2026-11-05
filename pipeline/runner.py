@@ -5,9 +5,10 @@ import json
 import os
 from pathlib import Path
 import tempfile
+import config
 from . import __version__
-from . import audit, pdf, prompts, schema
-from .report import write_report
+from . import audit_engine as audit, pdf_processor as pdf, prompt_loader as prompts, validator as schema
+from pipeline.report_generator import write_report
 
 
 def save_json(path, data):
@@ -41,8 +42,10 @@ def run(path, output, provider, progress=None, force=False):
     for source in sorted(Path(__file__).parent.glob("*.py")):
         engine.update(source.name.encode())
         engine.update(source.read_bytes())
+    engine.update(Path(config.__file__).read_bytes())
     manifest = {"source_sha256": sha_file(path), "models": provider.models,
                 "prompts_sha256": prompts.fingerprint(),
+                "schema_sha256": hashlib.sha256(schema.SCHEMA_PATH.read_bytes()).hexdigest(),
                 "engine_sha256": engine.hexdigest(), "render": pdf.RENDER_VERSION,
                 "version": __version__, "pages": total}
     fingerprint = hashlib.sha256(json.dumps(manifest, sort_keys=True).encode()).hexdigest()
@@ -81,7 +84,7 @@ def run(path, output, provider, progress=None, force=False):
                     save_json(cache, schema.raw_page(data))
                     results[stage].append(data)
                 except Exception as exc:
-                    from .provider import ProviderError
+                    from pipeline.gemini_service import ProviderError
                     message = str(exc) if isinstance(exc, ProviderError) else "Extraction or schema validation failed; page requires review"
                     errors.append({"page": page, "stage": stage, "message": message})
                     # A forced refresh must never resurrect an older successful response.

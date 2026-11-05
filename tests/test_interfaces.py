@@ -8,9 +8,9 @@ import unittest
 from unittest.mock import patch
 import urllib.error
 from fastapi.testclient import TestClient
-from builtii.provider import Gemini, ProviderError
-from builtii.web import create_app
-from builtii.pdf import Image, render
+from pipeline.gemini_service import Gemini, ProviderError
+from web.app import create_app
+from pipeline.pdf_processor import Image, render
 from .helpers import FakeProvider, make_pdf, page
 
 

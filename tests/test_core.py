@@ -3,10 +3,10 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
-from builtii.audit import reconcile
-from builtii.schema import validate_page, quantity
-from builtii.pipeline import run, save_json
-from builtii.evaluation import evaluate
+from pipeline.audit_engine import reconcile
+from pipeline.validator import validate_page, quantity
+from pipeline.runner import run, save_json
+from pipeline.boq_evaluation import evaluate
 from .helpers import item, page, make_pdf, FakeProvider
 
 
@@ -167,10 +167,23 @@ class PipelineTests(unittest.TestCase):
         run(self.pdf,self.root/"out",provider)
         self.assertEqual(provider.calls,[("ai1",1)])
 
+    def test_schema_change_creates_a_new_run(self):
+        from unittest.mock import patch
+        from pipeline import validator
+        provider=FakeProvider();folder,_=run(self.pdf,self.root/"out",provider)
+        changed=self.root/"changed-schema.json"
+        contract=json.loads(validator.SCHEMA_PATH.read_text())
+        contract['title']='Revised response contract'
+        changed.write_text(json.dumps(contract))
+        with patch.object(validator,'SCHEMA_PATH',changed):
+            revised,_=run(self.pdf,self.root/"out",provider)
+        self.assertNotEqual(folder,revised)
+        self.assertEqual(len(provider.calls),4)
+
     def test_render_failure_cannot_certify_cached_evidence(self):
         from unittest.mock import patch
         provider=FakeProvider();folder,_=run(self.pdf,self.root/"out",provider)
-        with patch('builtii.pipeline.pdf.render',side_effect=ValueError('test')):
+        with patch('pipeline.runner.pdf.render',side_effect=ValueError('test')):
             _,report=run(self.pdf,self.root/"out",provider)
         self.assertFalse(report["processing_complete"])
         self.assertEqual(report["rows"][0]["status"],"review_required")
@@ -185,7 +198,7 @@ class PipelineTests(unittest.TestCase):
         html=(folder/"report.html").read_text()
         self.assertNotIn('<script>alert(1)</script>',html)
         self.assertIn('&lt;script&gt;',html)
-        from builtii.report import safe_cell
+        from pipeline.report_generator import safe_cell
         self.assertEqual(safe_cell(' =1+2'),"' =1+2")
 
     def test_reviewed_boq_is_separate_and_run_bound(self):

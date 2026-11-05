@@ -1,7 +1,7 @@
 """Reconcile frozen observations without a BOQ, fuzzy quantity matching or guessing."""
 from collections import Counter, defaultdict
 from decimal import Decimal
-from .schema import normalized, unit
+from pipeline.validator import normalized, unit
 
 
 def scope(item):

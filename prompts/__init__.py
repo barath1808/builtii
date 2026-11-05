@@ -1,0 +1,1 @@
+"""Runtime drawing extraction instructions."""

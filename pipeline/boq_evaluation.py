@@ -3,8 +3,8 @@ import csv
 import json
 from decimal import Decimal
 from pathlib import Path
-from .schema import decimal, unit
-from .pipeline import sha_file
+from pipeline.validator import decimal, unit
+from pipeline.runner import sha_file
 
 
 def evaluate(report_path, reference_path, mapping_path):

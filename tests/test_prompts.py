@@ -2,12 +2,12 @@ from pathlib import Path
 import tempfile
 import unittest
 from unittest.mock import patch
-from builtii import prompts
+from pipeline import prompt_loader as prompts
 
 
 class PromptAssetTests(unittest.TestCase):
     def test_both_actual_prompts_include_shared_rules_and_schema(self):
-        for stage, filename in (("ai1", "ai1_extract.md"), ("ai2", "ai2_audit.md")):
+        for stage, filename in (("ai1", "construction_takeoff_prompt.md"), ("ai2", "ai2_audit_prompt.md")):
             composed = prompts.prompt(stage, 3, 10)
             self.assertIn((prompts.TEMPLATES / filename).read_text().strip(), composed)
             self.assertIn(prompts.RULES, composed)
@@ -16,7 +16,7 @@ class PromptAssetTests(unittest.TestCase):
 
     def test_editing_a_prompt_changes_cache_fingerprint(self):
         with tempfile.TemporaryDirectory() as directory:
-            path = Path(directory) / 'ai1_extract.md'
+            path = Path(directory) / 'construction_takeoff_prompt.md'
             path.write_text('First instruction')
             with patch.object(prompts, 'TEMPLATES', Path(directory)):
                 before = prompts.fingerprint()

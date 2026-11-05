@@ -3,9 +3,10 @@ from dataclasses import dataclass
 import math
 from pathlib import Path
 import pymupdf
+from config import MAX_PDF_BYTES, MAX_PDF_PAGES
 
-MAX_BYTES = 100 * 1024 * 1024
-MAX_PAGES = 200
+MAX_BYTES = MAX_PDF_BYTES
+MAX_PAGES = MAX_PDF_PAGES
 RENDER_VERSION = "overview-1200-detail-220dpi-1600px-overlap80-v1"
 
 

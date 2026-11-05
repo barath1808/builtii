@@ -12,11 +12,16 @@ dynamic = ["dependencies"]
 [tool.setuptools.dynamic]
 dependencies = {file = ["requirements.txt"]}
 
+[tool.setuptools]
+py-modules = ["main", "config"]
+
 [tool.setuptools.package-data]
-builtii = ["static/*", "prompt_templates/*.md"]
+web = ["static/*"]
+prompts = ["*.md"]
+schemas = ["*.json"]
 
 [tool.setuptools.packages.find]
-include = ["builtii*"]
+include = ["pipeline*", "prompts*", "schemas*", "web*"]
 
 [project.scripts]
-builtii = "builtii.__main__:main"
+builtii = "main:main"

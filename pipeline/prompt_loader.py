@@ -2,9 +2,10 @@
 import hashlib
 import json
 from pathlib import Path
-from .schema import PAGE_SCHEMA
+from importlib.resources import files
+from pipeline.validator import PAGE_SCHEMA
 
-TEMPLATES = Path(__file__).parent / "prompt_templates"
+TEMPLATES = Path(str(files("prompts")))
 SYSTEM = (TEMPLATES / "system.md").read_text(encoding="utf-8").strip()
 RULES = (TEMPLATES / "shared_rules.md").read_text(encoding="utf-8")
 
@@ -18,7 +19,7 @@ def fingerprint():
 
 
 def prompt(stage, page, total):
-    names = {"ai1": "ai1_extract.md", "ai2": "ai2_audit.md"}
+    names = {"ai1": "construction_takeoff_prompt.md", "ai2": "ai2_audit_prompt.md"}
     if stage not in names:
         raise ValueError("Unknown extraction stage")
     role = (TEMPLATES / names[stage]).read_text(encoding="utf-8").strip()

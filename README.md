@@ -7,12 +7,13 @@ queue. BOQs are optional, held-out evaluation inputs and cannot enter extraction
 
 ## Architecture and actual prompts
 
-- [Architecture, component map and data flow](docs/ARCHITECTURE.md)
-- [AI1 extraction prompt](builtii/prompt_templates/ai1_extract.md)
-- [AI2 independent audit prompt](builtii/prompt_templates/ai2_audit.md)
-- [Shared drawing extraction rules](builtii/prompt_templates/shared_rules.md)
-- [System instruction](builtii/prompt_templates/system.md)
-- [Output schema and arithmetic validation](builtii/schema.py)
+- [Architecture, component map and data flow](ARCHITECTURE.md)
+- [AI1 extraction prompt](prompts/construction_takeoff_prompt.md)
+- [AI2 independent audit prompt](prompts/ai2_audit_prompt.md)
+- [Shared drawing extraction rules](prompts/shared_rules.md)
+- [System instruction](prompts/system.md)
+- [Actual output schema](schemas/takeoff_schema.json)
+- [Schema and arithmetic validation](pipeline/validator.py)
 
 These Markdown prompt files are loaded by the application at runtime. Both AI
 passes receive their own role, the shared rules, page metadata and strict output
@@ -26,6 +27,12 @@ included in the source archive. Live model quality has not been measured.
 
 ## Run
 
+Use a fresh folder when downloading this version. Do not extract it over the old
+V2 folder: doing so leaves retired modules, historical scripts and bytecode in
+place. Keep your original drawings, outputs and credentials separately. The old
+`main.py --pdf ...` flags and V2 caches are not supported; use the commands below.
+The previous rewrite's `python -m builtii` commands are now `python main.py`.
+
 Python 3.11+ (validated on Python 3.12). From this directory:
 
 ```bash
@@ -33,6 +40,7 @@ python -m venv .venv
 # Linux / macOS:
 source .venv/bin/activate
 # Windows PowerShell instead: .venv\Scripts\Activate.ps1
+# Windows Command Prompt instead: .venv\Scripts\activate.bat
 python -m pip install -r requirements.txt
 ```
 
@@ -45,7 +53,7 @@ training or calibrated confidence. Outbound HTTPS must allow
 `generativelanguage.googleapis.com`. Preserve proxy and TLS trust settings.
 
 ```bash
-python -m builtii serve --port 8000 --data-dir data
+python main.py serve --port 8000 --data-dir output
 ```
 
 Open the local workbench in your browser on port 8000. Upload an unencrypted PDF,
@@ -58,7 +66,7 @@ the Internet. No third-party browser assets or remote scripts are used.
 CLI workflow:
 
 ```bash
-python -m builtii extract /path/to/drawing.pdf --output data/runs
+python main.py extract /path/to/drawing.pdf --output output/runs
 # Retry the identical command: valid cached pages are reused, failed calls retried.
 # --force intentionally refreshes both passes and incurs API usage.
 ```
@@ -139,9 +147,9 @@ assertions of payable scope, not automatic description-based matches:
 ```
 
 ```bash
-python -m builtii evaluate --report data/runs/RUN_ID/report.json \
+python main.py evaluate --report output/runs/RUN_ID/report.json \
   --reference /path/to/reviewed_boq.csv --mapping /path/to/mapping.json \
-  --output data/evaluation.json
+  --output output/evaluation.json
 ```
 
 Only mapped, supported observations from a completely processed drawing are
@@ -169,12 +177,12 @@ RUN_ID/
   quantities.csv
 ```
 
-Web jobs store their PDF and runs under `data/JOB_ID/`. Server restarts do not
+Web jobs store their PDF and runs under `output/JOB_ID/`. Server restarts do not
 resume in-flight requests automatically. A saved status reports interruption.
 Resume a web job using the CLI with its exact paths:
 
 ```bash
-python -m builtii extract data/JOB_ID/drawing.pdf --output data/JOB_ID/runs
+python main.py extract output/JOB_ID/drawing.pdf --output output/JOB_ID/runs
 ```
 
 The CLI writes the resumed report in the run directory; it does not update the

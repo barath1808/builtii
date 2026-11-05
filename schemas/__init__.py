@@ -1,0 +1,1 @@
+"""Runtime response schema assets."""

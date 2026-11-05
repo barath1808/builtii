@@ -33,20 +33,56 @@ There is no additional model call that edits AI1 quantities after seeing a BOQ.
 
 ## Code map
 
+```text
+Builtii/
+  main.py                 # Commands: serve, extract, evaluate
+  config.py               # Models, environment settings and input limits
+  ARCHITECTURE.md
+  README.md
+  requirements.txt
+  pipeline/               # Processing and audit logic
+    runner.py             # Coordinates the complete workflow
+    pdf_processor.py
+    prompt_loader.py
+    gemini_service.py     # Shared API adapter for AI1 and AI2
+    validator.py
+    audit_engine.py
+    report_generator.py
+    boq_evaluation.py     # Evaluation only; not part of extraction
+  prompts/                # Actual model instructions
+    construction_takeoff_prompt.md
+    ai2_audit_prompt.md
+    shared_rules.md
+    system.md
+  schemas/
+    takeoff_schema.json   # Actual response contract used by both models
+  web/
+    app.py
+    static/
+  tests/
+  docs/                   # Review findings and accuracy/validation notes
+  output/                 # Generated at runtime; not committed
+```
+
+Python package marker files (`__init__.py`) allow the folders and their assets to
+be included in an installable distribution. They are not extra processing stages.
+
 | File | Implemented responsibility |
 | --- | --- |
-| `builtii/__main__.py` | `serve`, `extract` and separate `evaluate` commands. |
-| `builtii/web.py` | Local upload endpoint, one active web job, background execution, persisted status and allowed report artifacts. |
-| `builtii/static/` | Upload/progress interface; no model credentials in browser code. |
-| `builtii/pdf.py` | PDF validation, overview, overlapping 220 DPI tiles and page previews; explicit resource limits. |
-| `builtii/prompts.py` | Loads actual Markdown prompt assets, composes stage prompt with page metadata and schema, hashes prompt assets. |
-| `builtii/prompt_templates/` | System, shared drawing rules, AI1 role and AI2 role used by API requests. |
-| `builtii/provider.py` | Gemini HTTPS requests, images, bounded transient retries, response completion checks and sanitized failures. |
-| `builtii/schema.py` | Strict output contract, source rectangle validation, decimal arithmetic and dimensional checks. |
-| `builtii/pipeline.py` | Source/configuration fingerprints, per-page execution, validated cache reuse, failure retention and report generation. |
-| `builtii/audit.py` | Item correspondence, independent quantity comparison, AI2-only findings, duplicate warnings and review reasons. |
-| `builtii/report.py` | Portable HTML with source highlights, spreadsheet-safe CSV and page/region review queue. |
-| `builtii/evaluation.py` | Offline reviewed-reference comparison with run-bound mappings; never calls a model. |
+| `main.py` | `serve`, `extract` and separate `evaluate` commands. |
+| `config.py` | Shared model selection, process environment settings and PDF limits. No embedded credentials. |
+| `web/app.py` | Local upload endpoint, one active web job, background execution, persisted status and allowed report artifacts. |
+| `web/static/` | Upload/progress interface; no model credentials in browser code. |
+| `pipeline/pdf_processor.py` | PDF validation, overview, overlapping 220 DPI tiles and page previews; explicit resource limits. |
+| `pipeline/prompt_loader.py` | Loads actual Markdown prompt assets, composes stage prompt with page metadata and schema, hashes prompt assets. |
+| `prompts/` | System, shared drawing rules, AI1 role and AI2 role used by API requests. |
+| `pipeline/gemini_service.py` | Gemini HTTPS requests, images, bounded transient retries, response completion checks and sanitized failures. |
+| `schemas/takeoff_schema.json` | Single authoritative JSON response contract for both AI passes. |
+| `pipeline/validator.py` | Loads that schema, validates source rectangles, computes decimal arithmetic and checks dimensions. |
+| `pipeline/runner.py` | Source/configuration fingerprints, per-page execution, validated cache reuse, failure retention and report generation. |
+| `pipeline/audit_engine.py` | Item correspondence, independent quantity comparison, AI2-only findings, duplicate warnings and review reasons. |
+| `pipeline/report_generator.py` | Portable HTML with source highlights, spreadsheet-safe CSV and page/region review queue. |
+| `pipeline/boq_evaluation.py` | Offline reviewed-reference comparison with run-bound mappings; never calls a model. |
 | `tests/` | Synthetic behavior tests and injected provider fixtures; never used as production fallback data. |
 
 ## Actual prompt composition
@@ -55,16 +91,17 @@ The API's `systemInstruction` comes from `system.md`. Image messages carry the
 overview and every detail tile, labelled with full-page bounds. The text following
 the images is composed in this order:
 
-1. `ai1_extract.md` or `ai2_audit.md`.
+1. `construction_takeoff_prompt.md` or `ai2_audit_prompt.md`.
 2. Requested page index and total pages, supplied by Python.
 3. `shared_rules.md`, which contains the detailed extraction and uncertainty rules.
-4. The JSON output schema serialized from `schema.PAGE_SCHEMA`.
+4. `schemas/takeoff_schema.json`, loaded as `validator.PAGE_SCHEMA`.
 
 The individual role files are deliberately short. The full instruction is their
 composition with the shared rules and schema; reading the role file alone does
-not show the complete request. `provider.Gemini.extract` is the actual call site.
-The schema is executable Python rather than a duplicated JSON file, keeping its
-runtime definition authoritative. The old V2 prompt/schema contract is not used.
+not show the complete request. `pipeline/gemini_service.py:Gemini.extract` is the
+actual call site. The JSON schema is used for both prompt composition and response
+validation; there is no second schema definition embedded in Python. The old V2
+prompt/schema contract is not used.
 
 ## Observation contract
 
@@ -108,9 +145,10 @@ it does not yet implement authenticated engineer decisions or sign-off history.
 
 ## Runtime and storage
 
-CLI runs live under `OUTPUT/RUN_ID/`. Web jobs store `data/JOB_ID/drawing.pdf`,
+CLI runs live under `OUTPUT/RUN_ID/`. Web jobs store `output/JOB_ID/drawing.pdf`,
 `status.json` and `runs/RUN_ID/`. A run manifest records source SHA-256, models,
-engine code hash, prompt file hash, rendering version and page count. Their
+engine/configuration code hash, prompt file hash, schema file hash, rendering
+version and page count. Their
 combined fingerprint determines the run/cache directory.
 
 Each successful page is cached separately for AI1 and AI2. Cache reuse revalidates
@@ -129,5 +167,4 @@ agreement. This cannot establish model accuracy by itself.
 Production work remains: tenant authentication and isolation, durable jobs and
 storage, PDF processing isolation, quotas, reviewer decisions with audit history,
 cross-sheet dependency handling and an engineer-reviewed real-drawing benchmark.
-See `ACCURACY.md` for validation requirements and `VALIDATION.md` for checks
-actually performed.
+See [accuracy validation](docs/ACCURACY.md) and [checks actually performed](docs/VALIDATION.md).

@@ -1,12 +1,12 @@
 """Gemini REST adapter; injectable transport for offline verification."""
 import base64
 import json
-import os
 import re
 import time
 import urllib.error
 import urllib.request
-from .prompts import SYSTEM, prompt
+import config
+from pipeline.prompt_loader import SYSTEM, prompt
 
 
 class ProviderError(RuntimeError):
@@ -15,11 +15,10 @@ class ProviderError(RuntimeError):
 
 class Gemini:
     def __init__(self, opener=None, sleeper=time.sleep):
-        self.key = os.environ.get("GEMINI_API_KEY", "").strip()
+        self.key = config.api_key()
         if not self.key:
             raise ProviderError("Set GEMINI_API_KEY securely in the server environment")
-        self.models = {"ai1": os.environ.get("GEMINI_MODEL", "gemini-2.5-pro"),
-                       "ai2": os.environ.get("GEMINI_AUDIT_MODEL", os.environ.get("GEMINI_MODEL", "gemini-2.5-pro"))}
+        self.models = config.models()
         if any(not re.fullmatch(r"[A-Za-z0-9._-]+", m) for m in self.models.values()):
             raise ProviderError("Invalid model identifier")
         self.opener, self.sleep = opener or urllib.request.urlopen, sleeper

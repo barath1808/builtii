@@ -7,16 +7,17 @@ from pathlib import Path
 import shutil
 import threading
 import uuid
+import config
 from fastapi import FastAPI, File, HTTPException, Request, UploadFile
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
-from .pdf import inspect, MAX_BYTES
-from .pipeline import run, save_json
-from .provider import Gemini
+from pipeline.pdf_processor import inspect, MAX_BYTES
+from pipeline.runner import run, save_json
+from pipeline.gemini_service import Gemini
 
 
 def create_app(data_dir=None, provider_factory=Gemini):
-    root = Path(data_dir or os.environ.get("BUILTII_DATA_DIR", "data")).resolve()
+    root = Path(data_dir or config.output_dir()).resolve()
     root.mkdir(parents=True, exist_ok=True)
     jobs, guard = {}, threading.Lock()
     pool = ThreadPoolExecutor(max_workers=1)
