@@ -1,0 +1,6 @@
+# Versions verified together in the development environment (Python 3.11+).
+PyMuPDF==1.26.6
+jsonschema==4.26.0
+fastapi==0.141.1
+uvicorn==0.52.1
+python-multipart==0.0.32

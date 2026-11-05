@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "builtii"
+version = "6.0.0"
+description = "Evidence-first engineering drawing takeoff and independent audit"
+requires-python = ">=3.11"
+dynamic = ["dependencies"]
+
+[tool.setuptools.dynamic]
+dependencies = {file = ["requirements.txt"]}
+
+[tool.setuptools.package-data]
+builtii = ["static/*"]
+
+[tool.setuptools.packages.find]
+include = ["builtii*"]
+
+[project.scripts]
+builtii = "builtii.__main__:main"
